@@ -12,10 +12,10 @@
 
 + (instancetype)infoWithRequest:(CFHTTPMessageRef)request {
     YCLocalResponseHTTPInfo *info = [[YCLocalResponseHTTPInfo alloc] init];
-    info.headerFieldsDictionary = (__bridge NSDictionary *)CFHTTPMessageCopyAllHeaderFields(request);
-    NSURL *requestURL = (__bridge NSURL *)CFHTTPMessageCopyRequestURL(request);
+    info.headerFieldsDictionary = (__bridge_transfer NSDictionary *)CFHTTPMessageCopyAllHeaderFields(request);
+    NSURL *requestURL = (__bridge_transfer NSURL *)CFHTTPMessageCopyRequestURL(request);
     info.requestURLComponents = [NSURLComponents componentsWithURL:requestURL resolvingAgainstBaseURL:YES];
-    info.requestMethod = (__bridge NSString *)CFHTTPMessageCopyRequestMethod(request);
+    info.requestMethod = (__bridge_transfer NSString *)CFHTTPMessageCopyRequestMethod(request);
     return info;
 }
 

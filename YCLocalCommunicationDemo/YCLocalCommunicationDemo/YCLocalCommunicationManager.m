@@ -15,6 +15,10 @@
 //responseHandler
 #import "YCLocalResponseHandler.h"
 
+void YCHTTPMessageRefReleaseCallback (CFAllocatorRef allocator, const void *value) {
+    CFRelease(value);
+}
+
 @interface YCLocalCommunicationManager ()
 
 @property (strong, nonatomic) NSFileHandle *listeningFileHandle;
@@ -42,10 +46,12 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
+        CFDictionaryValueCallBacks valueCallback = kCFTypeDictionaryValueCallBacks;
+        valueCallback.release = YCHTTPMessageRefReleaseCallback;
         _requestDictionaryRef = CFDictionaryCreateMutable(kCFAllocatorDefault,
                                                           0,
                                                           &kCFTypeDictionaryKeyCallBacks,
-                                                          &kCFTypeDictionaryValueCallBacks);
+                                                          &valueCallback);
         _responseHandlerSet = [NSMutableSet set];
     }
     return self;
@@ -75,8 +81,11 @@
     CFDataRef socketAddressDataRef = CFDataCreate(kCFAllocatorDefault, (UInt8 *)&socketAddress, sizeof(socketAddress));
     //set socket address
     if (CFSocketSetAddress(self.socketRef, socketAddressDataRef) != kCFSocketSuccess) {
+        CFRelease(socketAddressDataRef);
         return;
     }
+    CFRelease(socketAddressDataRef);
+    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(fileHandleDidAcceptConnection:)
                                                  name:NSFileHandleConnectionAcceptedNotification
